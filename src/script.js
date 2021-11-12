@@ -176,7 +176,7 @@ const generateRandomGalaxy = ()=>{
  
       //Point instantiation
     randomGalaxyGeometry =new THREE.BufferGeometry()
-    for(let i = 0 ;i<50;i++){//50 galaxies
+    for(let i = 0 ;i<100;i++){//100 galaxies
         randomGalaxyGeometry[i] = new THREE.BufferGeometry()
         const randomPositions = new Float32Array(1000 * 3)
         const randomColors = new Float32Array(1000 * 3)
