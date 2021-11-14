@@ -171,19 +171,18 @@ const generateRandomGalaxy = ()=>{
     randomGalaxyMaterial.blending=THREE.AdditiveBlending,
     randomGalaxyMaterial.vertexColors=true
 
-      //Clear old instantiations
-    if(randomGalaxy !== null){
-        randomGalaxyMaterial.dispose()
-    for(let i=0;i<=randomGalaxyParameters.numberOfGalaxies;i++){
-        if(randomGalaxyGeometry[i] !== null ){
-            randomGalaxyGeometry.dispose()
-            scene.remove(randomGalaxy[i])
+    if(scene.children.length !== null){
+        console.log(scene.children.length)
+
+        for( var i = scene.children.length - 1; i >= 0; i--) { 
+            if(randomGalaxyGeometry !== null){
+                randomGalaxyGeometry.dispose()
             }
-            else{
-                return
-            }
-        } 
-    } 
+            randomGalaxyMaterial.dispose()
+            let obj = scene.children[i];
+            scene.remove(obj); 
+        }
+    }
  
     //Instantiate Geometries
     randomGalaxyGeometry =new THREE.BufferGeometry()
@@ -228,7 +227,6 @@ const generateRandomGalaxy = ()=>{
         randomGalaxy[i].position.set((Math.random()-0.5)*generationDistance,(Math.random()-0.5)*generationDistance,(Math.random()-0.5)*generationDistance)
         randomGalaxy[i].rotation.set((Math.random()),(Math.random()),(Math.random()))
         scene.add(randomGalaxy[i])
-       // console.log('galaxy generated', randomGalaxyGeometry[i].uuid)
         }     
 } 
 
