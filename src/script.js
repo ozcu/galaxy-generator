@@ -76,7 +76,7 @@ scene.add(axesHelper) */
 const medGalaxyParameters = {
 
     starCount:5000,
-    numberOfGalaxies:1,
+    numberOfGalaxies:0,
     size:0.01,
     radius:3,
     branches:6,
@@ -100,7 +100,7 @@ const smGalaxyParameters = {
     randPower:3,
     smGalaxyInColor:'#00fffb',
     smGalaxyOutColor:'#f609c3',
-    numberOfGalaxies:1,
+    numberOfGalaxies:0,
     generationDistance:40,
 
 }
@@ -123,6 +123,9 @@ const randomizeGalaxyParameters = () =>{
 const randomGalaxyParameters={
     starCount:5000,
     numberOfGalaxies:2,
+    generateRandomGalaxy:function(){
+        generateRandomGalaxy()
+    }
 }
 
 //Clear memory
@@ -157,37 +160,41 @@ const smGalaxyOutColor = new THREE.Color(smGalaxyParameters.smGalaxyOutColor)
 
 const generateRandomGalaxy = ()=>{
 
-    //clear old instantiations
-    if(randomGalaxy !==null){
-        
-        randomGalaxyMaterial.dispose()
-        for(let i=0;i<=100;i++){
-        randomGalaxyGeometry[i].dispose()
-        scene.remove(randomGalaxy[i])
-        } 
-    }
-      
-   
-    //setMaterials
+       //setMaterials
     const {size} = randomizeGalaxyParameters()
     
-    //smGalaxyMaterial of points in smGalaxy
+    //set Material
     randomGalaxyMaterial = new THREE.PointsMaterial()
     randomGalaxyMaterial.size = size
     randomGalaxyMaterial.sizeAttenuation= true
     randomGalaxyMaterial.depthWrite=false
     randomGalaxyMaterial.blending=THREE.AdditiveBlending,
     randomGalaxyMaterial.vertexColors=true
+
+      //Clear old instantiations
+    if(randomGalaxy !== null){
+        randomGalaxyMaterial.dispose()
+    for(let i=0;i<=randomGalaxyParameters.numberOfGalaxies;i++){
+        if(randomGalaxyGeometry[i] !== null ){
+            randomGalaxyGeometry.dispose()
+            scene.remove(randomGalaxy[i])
+            }
+            else{
+                return
+            }
+        } 
+    } 
  
-    //Point instantiation
+    //Instantiate Geometries
     randomGalaxyGeometry =new THREE.BufferGeometry()
-    for(let i = 0 ;i<=randomGalaxyParameters.numberOfGalaxies;i++){
+    for(let i = 1 ;i<=randomGalaxyParameters.numberOfGalaxies;i++){
         randomGalaxyGeometry[i] = new THREE.BufferGeometry()
         const randomPositions = new Float32Array(randomGalaxyParameters.starCount * 3)
         const randomColors = new Float32Array(randomGalaxyParameters.starCount * 3)
         const {radius,spin,branches,randPower,randomness,galaxyInColor,galaxyOutColor} = randomizeGalaxyParameters()
-            for(let i=0;i<randomGalaxyParameters.starCount;i++){ 
+            for(let i=1;i<=randomGalaxyParameters.starCount;i++){ 
                 
+            //set Points
             const i3 = i*3
             const randomRadius = Math.random()*radius
             const spinAngle = randomRadius*spin 
@@ -201,7 +208,7 @@ const generateRandomGalaxy = ()=>{
             randomPositions[i3+1] = randomY
             randomPositions[i3+2]= Math.sin(branchAngle+spinAngle) *randomRadius+randomZ
 
-            //pointColors
+            //set Colors
             const mixedColor = galaxyInColor.clone()
             mixedColor.lerp(galaxyOutColor,randomRadius/radius)
                     
@@ -212,18 +219,16 @@ const generateRandomGalaxy = ()=>{
         
         randomGalaxyGeometry[i].setAttribute('position',new THREE.BufferAttribute(randomPositions,3))
         randomGalaxyGeometry[i].setAttribute('color',new THREE.BufferAttribute(randomColors,3))
-    
-        //Generate randomGalaxy
+      
+        //Generate Galaxies and Add to Scene
         randomGalaxy = new THREE.Points(randomGalaxyGeometry,randomGalaxyMaterial)
-        const {generationDistance} = randomizeGalaxyParameters()
         randomGalaxy[i] = new THREE.Points(randomGalaxyGeometry[i],randomGalaxyMaterial)
+
+        const {generationDistance} = randomizeGalaxyParameters()
         randomGalaxy[i].position.set((Math.random()-0.5)*generationDistance,(Math.random()-0.5)*generationDistance,(Math.random()-0.5)*generationDistance)
         randomGalaxy[i].rotation.set((Math.random()),(Math.random()),(Math.random()))
         scene.add(randomGalaxy[i])
-
-        /* console.log(randomGalaxy[i])
-        console.log(randomGalaxyGeometry[i])
-        console.log(randomGalaxyMaterial) */
+       // console.log('galaxy generated', randomGalaxyGeometry[i].uuid)
         }     
 } 
 
@@ -245,7 +250,7 @@ const generateSmGalaxy = ()=> {
   }  
 
   //Point instantiation
-  for(let i=0;i<smGalaxyParameters.starCount;i++){
+  for(let i=0;i<=smGalaxyParameters.starCount;i++){
     const i3 = i*3
     const radius = Math.random()* smGalaxyParameters.radius
     const spinAngle = radius*smGalaxyParameters.spin
@@ -309,7 +314,7 @@ const generateMedGalaxy = () => {
     }  
     //Point instantiation
    
-    for(let i=0;i<medGalaxyParameters.starCount;i++){
+    for(let i=0;i<=medGalaxyParameters.starCount;i++){
         const i3 = i*3
         const radius = Math.random() * medGalaxyParameters.radius
         const spinAngle = radius*medGalaxyParameters.spin
@@ -356,6 +361,13 @@ const generateMedGalaxy = () => {
     }
 generateMedGalaxy()
 
+
+//random Galaxy Parameters
+const randomGalaxyFolder = gui.addFolder('randomGalaxies')
+randomGalaxyFolder.add(randomGalaxyParameters,'numberOfGalaxies').min(1).max(100).step(1).onFinishChange(generateRandomGalaxy)
+randomGalaxyFolder.add(randomGalaxyParameters,'starCount').min(1000).max(10000).step(100).onFinishChange(generateRandomGalaxy)
+randomGalaxyFolder.add(randomGalaxyParameters,'generateRandomGalaxy')
+
 // medGalaxyParameters
 const medGalaxyFolder = gui.addFolder ('medGalaxies')
 medGalaxyFolder.add(medGalaxyParameters,'starCount').min(100).max(100000).step(100).onFinishChange(generateMedGalaxy)
@@ -384,9 +396,7 @@ smGalaxyFolder.add(smGalaxyParameters,'generationDistance').min(20).max(200).ste
 smGalaxyFolder.addColor(smGalaxyParameters, 'smGalaxyInColor').onFinishChange(generateSmGalaxy)
 smGalaxyFolder.addColor(smGalaxyParameters, 'smGalaxyOutColor').onFinishChange(generateSmGalaxy) 
 
-const randomGalaxyFolder = gui.addFolder('randomGalaxies')
-randomGalaxyFolder.add(randomGalaxyParameters,'numberOfGalaxies').min(1).max(100).step(1).onFinishChange(generateRandomGalaxy)
-randomGalaxyFolder.add(randomGalaxyParameters,'starCount').min(1000).max(10000).step(100).onFinishChange(generateRandomGalaxy)
+
 
 
 
@@ -412,10 +422,10 @@ const animateScene = () =>
  
     }
     
-   /*     for(let i = 1;i<=50;i++){
-        randomGalaxy[i].rotateY(Math.abs(Math.random())*0.0005*i)
-        console.log(randomGalaxy[i])
-    }    */
+   /*  for(let i = 1;i<=2;i++){
+    randomGalaxy[i].rotateY(Math.abs(Math.random())*0.0005*i)
+    console.log(randomGalaxy[i])
+    }    */  
   
    //stats
    stats.update()
